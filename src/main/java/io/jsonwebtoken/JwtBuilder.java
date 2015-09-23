@@ -351,10 +351,10 @@ public interface JwtBuilder extends ClaimsMutator<JwtBuilder> {
 
     /**
      *
-     * @param alg
+     * @param alg the algorithm to use for compression
      * @return the builder for method chaining.
      */
-    public JwtBuilder compressWith(CompressionAlgorithm alg);
+    JwtBuilder compressWith(CompressionAlgorithm alg);
 
     /**
      * Actually builds the JWT and serializes it to a compact, URL-safe string according to the
