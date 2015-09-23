@@ -30,11 +30,8 @@ public class DefaultDecompressorFactory implements DecompressorFactory {
         switch (alg) {
             case DEFLATE:
                 return new DeflateDecompressor();
-            case GZIP:
-                return new GzipDecompressor();
-
             default:
-                throw new IllegalArgumentException("The '" + alg.name() + "' algorithm cannot be used for compression.");
+                return new GzipDecompressor();
         }
 
     }
