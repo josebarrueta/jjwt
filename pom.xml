@@ -316,6 +316,11 @@
                                 <lineRate>93</lineRate>
                                 <branchRate>100</branchRate>
                             </regex>
+                            <regex>
+                                <pattern>io.jsonwebtoken.impl.compression.DeflateCompressor</pattern>
+                                <lineRate>81</lineRate>
+                                <branchRate>100</branchRate>
+                            </regex>
                         </regexes>
                     </check>
                     <formats>

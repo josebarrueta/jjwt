@@ -16,6 +16,7 @@
 package io.jsonwebtoken
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.jsonwebtoken.impl.CompressionException
 import io.jsonwebtoken.impl.DefaultHeader
 import io.jsonwebtoken.impl.DefaultJwsHeader
 import io.jsonwebtoken.impl.TextCodec
@@ -360,6 +361,16 @@ class JwtsTest {
         assertEquals id, claims.getId()
         assertEquals "an audience", claims.getAudience()
         assertEquals "hello this is an amazing jwt", claims.state
+    }
+
+    @Test
+    void testWithInvalidCompressionAlgorithm() {
+        try {
+
+            Jwts.builder().setHeaderParam("cmpalg", "CUSTOM").setId("andId").compact()
+        } catch (CompressionException e) {
+            assertEquals "Unsupported compression algorithm 'CUSTOM'", e.getMessage()
+        }
     }
 
     @Test
