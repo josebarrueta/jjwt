@@ -18,12 +18,15 @@ package io.jsonwebtoken.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.CompressionAlgorithm;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.compression.Compressor;
+import io.jsonwebtoken.impl.compression.DefaultCompressor;
 import io.jsonwebtoken.impl.crypto.DefaultJwtSigner;
 import io.jsonwebtoken.impl.crypto.JwtSigner;
 import io.jsonwebtoken.lang.Assert;
@@ -45,8 +48,9 @@ public class DefaultJwtBuilder implements JwtBuilder {
     private String payload;
 
     private SignatureAlgorithm algorithm;
-    private Key                key;
-    private byte[]             keyBytes;
+    private CompressionAlgorithm compressionAlgorithm;
+    private Key key;
+    private byte[] keyBytes;
 
     @Override
     public JwtBuilder setHeader(Header header) {
@@ -110,6 +114,13 @@ public class DefaultJwtBuilder implements JwtBuilder {
         Assert.notNull(key, "Key argument cannot be null.");
         this.algorithm = alg;
         this.key = key;
+        return this;
+    }
+
+    @Override
+    public JwtBuilder compressWith(CompressionAlgorithm alg) {
+        Assert.notNull(alg, "CompressionAlgorithm cannot be null.");
+        this.compressionAlgorithm = alg;
         return this;
     }
 
@@ -267,7 +278,7 @@ public class DefaultJwtBuilder implements JwtBuilder {
         JwsHeader jwsHeader;
 
         if (header instanceof JwsHeader) {
-            jwsHeader = (JwsHeader)header;
+            jwsHeader = (JwsHeader) header;
         } else {
             jwsHeader = new DefaultJwsHeader(header);
         }
@@ -279,11 +290,28 @@ public class DefaultJwtBuilder implements JwtBuilder {
             jwsHeader.setAlgorithm(SignatureAlgorithm.NONE.getValue());
         }
 
+        if (compressionAlgorithm != null) {
+            jwsHeader.setCompressionAlgorithm(compressionAlgorithm.getValue());
+        }
+
         String base64UrlEncodedHeader = base64UrlEncode(jwsHeader, "Unable to serialize header to json.");
 
-        String base64UrlEncodedBody = this.payload != null ?
-                                      TextCodec.BASE64URL.encode(this.payload) :
-                                      base64UrlEncode(claims, "Unable to serialize claims object to json.");
+        String base64UrlEncodedBody;
+
+        if (compressionAlgorithm != null) {
+            byte[] bytes;
+            try {
+                bytes = this.payload != null ? payload.getBytes(Strings.UTF_8) : toJson(claims);
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Unable to serialize claims object to json.");
+            }
+            Compressor compressor = createCompressor(compressionAlgorithm);
+            base64UrlEncodedBody = TextCodec.BASE64URL.encode(compressor.compress(bytes));
+        } else {
+            base64UrlEncodedBody = this.payload != null ?
+                    TextCodec.BASE64URL.encode(this.payload) :
+                    base64UrlEncode(claims, "Unable to serialize claims object to json.");
+        }
 
         String jwt = base64UrlEncodedHeader + JwtParser.SEPARATOR_CHAR + base64UrlEncodedBody;
 
@@ -311,17 +339,24 @@ public class DefaultJwtBuilder implements JwtBuilder {
     }
 
     protected String base64UrlEncode(Object o, String errMsg) {
-        String s;
+        byte[] bytes;
         try {
-            s = toJson(o);
+            bytes = toJson(o);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(errMsg, e);
         }
 
-        return TextCodec.BASE64URL.encode(s);
+        return TextCodec.BASE64URL.encode(bytes);
     }
 
-    protected String toJson(Object o) throws JsonProcessingException {
-        return OBJECT_MAPPER.writeValueAsString(o);
+
+    protected byte[] toJson(Object object) throws  JsonProcessingException {
+        return OBJECT_MAPPER.writeValueAsBytes(object);
     }
+
+
+    protected Compressor createCompressor(CompressionAlgorithm alg) {
+        return new DefaultCompressor(alg);
+    }
+
 }

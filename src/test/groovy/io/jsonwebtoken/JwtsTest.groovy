@@ -321,6 +321,48 @@ class JwtsTest {
     }
 
     @Test
+    void testCompressedJwtWithDeflate() {
+
+        byte[] key = MacProvider.generateKey().getEncoded()
+
+        String id = UUID.randomUUID().toString()
+
+        String compact = Jwts.builder().setId(id).setAudience("an audience").signWith(SignatureAlgorithm.HS256, key)
+                .claim("state", "hello this is an amazing jwt").compressWith(CompressionAlgorithm.DEFLATE).compact()
+
+        def jws = Jwts.parser().setSigningKey(key).parseClaimsJws(compact)
+
+        Claims claims = jws.body
+
+        assertEquals "DEF", jws.header.getCompressionAlgorithm()
+
+        assertEquals id, claims.getId()
+        assertEquals "an audience", claims.getAudience()
+        assertEquals "hello this is an amazing jwt", claims.state
+    }
+
+    @Test
+    void testCompressedJwtWithGZIP() {
+
+        byte[] key = MacProvider.generateKey().getEncoded()
+
+        String id = UUID.randomUUID().toString()
+
+        String compact = Jwts.builder().setId(id).setAudience("an audience").signWith(SignatureAlgorithm.HS256, key)
+                .claim("state", "hello this is an amazing jwt").compressWith(CompressionAlgorithm.GZIP).compact()
+
+        def jws = Jwts.parser().setSigningKey(key).parseClaimsJws(compact)
+
+        Claims claims = jws.body
+
+        assertEquals "GZIP", jws.header.getCompressionAlgorithm()
+
+        assertEquals id, claims.getId()
+        assertEquals "an audience", claims.getAudience()
+        assertEquals "hello this is an amazing jwt", claims.state
+    }
+
+    @Test
     void testHS256() {
         testHmac(SignatureAlgorithm.HS256);
     }

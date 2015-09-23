@@ -17,11 +17,11 @@ package io.jsonwebtoken.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.CompressionAlgorithm;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.SigningKeyResolver;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtHandler;
 import io.jsonwebtoken.JwtHandlerAdapter;
@@ -30,7 +30,10 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.PrematureJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.SigningKeyResolver;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.impl.compression.Decompressor;
+import io.jsonwebtoken.impl.compression.DefaultDecompressorFactory;
 import io.jsonwebtoken.impl.crypto.DefaultJwtSignatureValidator;
 import io.jsonwebtoken.impl.crypto.JwtSignatureValidator;
 import io.jsonwebtoken.lang.Assert;
@@ -168,8 +171,24 @@ public class DefaultJwtParser implements JwtParser {
             }
         }
 
+        CompressionAlgorithm compressionAlgorithm = null;
+
+        if (header != null) {
+            String alg = header.getCompressionAlgorithm();
+            if (Strings.hasText(alg)) {
+                compressionAlgorithm = CompressionAlgorithm.forName(alg);
+            }
+        }
+
         // =============== Body =================
-        String payload = TextCodec.BASE64URL.decodeToString(base64UrlEncodedPayload);
+
+        String payload;
+        if (compressionAlgorithm != null) {
+            byte[] decompressed = createDecompressor(compressionAlgorithm).decompressBase64(base64UrlEncodedPayload);
+            payload = new String(decompressed, Strings.UTF_8);
+        } else {
+            payload = TextCodec.BASE64URL.decodeToString(base64UrlEncodedPayload);
+        }
 
         Claims claims = null;
 
@@ -397,5 +416,9 @@ public class DefaultJwtParser implements JwtParser {
         } catch (IOException e) {
             throw new MalformedJwtException("Unable to read JSON value: " + val, e);
         }
+    }
+
+    protected Decompressor createDecompressor(CompressionAlgorithm alg) {
+        return DefaultDecompressorFactory.INSTANCE.createDecompressor(alg);
     }
 }

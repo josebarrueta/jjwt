@@ -350,6 +350,13 @@ public interface JwtBuilder extends ClaimsMutator<JwtBuilder> {
     JwtBuilder signWith(SignatureAlgorithm alg, Key key);
 
     /**
+     *
+     * @param alg
+     * @return the builder for method chaining.
+     */
+    public JwtBuilder compressWith(CompressionAlgorithm alg);
+
+    /**
      * Actually builds the JWT and serializes it to a compact, URL-safe string according to the
      * <a href="https://tools.ietf.org/html/draft-ietf-oauth-json-web-token-25#section-7">JWT Compact Serialization</a>
      * rules.

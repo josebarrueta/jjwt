@@ -50,5 +50,4 @@ public class DefaultJwsHeader extends DefaultHeader implements JwsHeader {
         setValue(KEY_ID, kid);
         return this;
     }
-
 }
