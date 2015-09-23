@@ -13,23 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jsonwebtoken.impl;
+package io.jsonwebtoken
 
-import io.jsonwebtoken.JwtException;
+import org.junit.Test
 
-/**
- * Exception indicating that either compressing or decompressing an JWT body failed.
- *
- * @since 0.5.2
- */
-public class CompressionException extends JwtException {
+import static org.junit.Assert.assertEquals
 
-    public CompressionException(String message) {
-        super(message);
+class CompressionExceptionTest  {
+
+    @Test
+    void testDefaultConstructor() {
+        def exception = new CompressionException("my message")
+
+        assertEquals "my message", exception.getMessage()
     }
 
-    public CompressionException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    @Test
+    void testConstructorWithCause() {
 
+        def ioException = new IOException("root error")
+
+        def exception = new CompressionException("wrapping", ioException)
+
+        assertEquals "wrapping", exception.getMessage()
+        assertEquals ioException, exception.getCause()
+    }
 }

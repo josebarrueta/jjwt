@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 jsonwebtoken.io
+ * Copyright (C) 2014 jsonwebtoken.io
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,18 @@
 package io.jsonwebtoken;
 
 /**
+ * Exception indicating that either compressing or decompressing an JWT body failed.
+ *
  * @since 0.5.2
  */
-public enum CompressionAlgorithm {
+public class CompressionException extends JwtException {
 
-    DEFLATE("DEF"),
-    GZIP("GZIP");
-
-    private final String value;
-
-    CompressionAlgorithm(String value) {
-        this.value = value;
+    public CompressionException(String message) {
+        super(message);
     }
 
-    public static CompressionAlgorithm forName(String value) throws SignatureException {
-        for (CompressionAlgorithm alg : values()) {
-            if (alg.getValue().equalsIgnoreCase(value)) {
-                return alg;
-            }
-        }
-
-        throw new CompressionException("Unsupported compression algorithm '" + value + "'");
+    public CompressionException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public String getValue() {
-        return value;
-    }
 }
