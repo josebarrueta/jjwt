@@ -15,12 +15,27 @@
  */
 package io.jsonwebtoken
 
-/**
- * Class CompressionExceptionTest is used for...
- *
- * @since 0.5.2
- */
+import org.junit.Test
+
+import static org.junit.Assert.assertEquals
+
 class CompressionExceptionTest  {
 
+    @Test
+    void testDefaultConstructor() {
+        def exception = new CompressionException("my message")
 
+        assertEquals "my message", exception.getMessage()
+    }
+
+    @Test
+    void testConstructorWithCause() {
+
+        def ioException = new IOException("root error")
+
+        def exception = new CompressionException("wrapping", ioException)
+
+        assertEquals "wrapping", exception.getMessage()
+        assertEquals ioException, exception.getCause()
+    }
 }

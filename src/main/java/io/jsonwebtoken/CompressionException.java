@@ -15,8 +15,6 @@
  */
 package io.jsonwebtoken;
 
-import io.jsonwebtoken.JwtException;
-
 /**
  * Exception indicating that either compressing or decompressing an JWT body failed.
  *

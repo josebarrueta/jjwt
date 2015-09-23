@@ -1,6 +1,6 @@
 package io.jsonwebtoken.impl.compression;
 
-import io.jsonwebtoken.impl.CompressionException;
+import io.jsonwebtoken.CompressionException;
 import io.jsonwebtoken.impl.TextCodec;
 import io.jsonwebtoken.lang.Assert;
 import io.jsonwebtoken.lang.Objects;

@@ -15,8 +15,6 @@
  */
 package io.jsonwebtoken;
 
-import io.jsonwebtoken.impl.CompressionException;
-
 /**
  * @since 0.5.2
  */

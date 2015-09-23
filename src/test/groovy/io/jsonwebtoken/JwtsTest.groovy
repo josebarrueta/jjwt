@@ -187,6 +187,16 @@ class JwtsTest {
     }
 
     @Test
+    void testWithInvalidCompressionAlgorithm() {
+        try {
+
+            Jwts.builder().setHeaderParam("cmpalg", "CUSTOM").setId("andId").compact()
+        } catch (CompressionException e) {
+            assertEquals "Unsupported compression algorithm 'CUSTOM'", e.getMessage()
+        }
+    }
+
+    @Test
     void testConvenienceIssuer() {
         String compact = Jwts.builder().setIssuer("Me").compact();
         Claims claims = Jwts.parser().parse(compact).body as Claims
@@ -361,6 +371,26 @@ class JwtsTest {
         assertEquals "an audience", claims.getAudience()
         assertEquals "hello this is an amazing jwt", claims.state
     }
+
+    @Test
+    void testCompressStringPayloadWithDeflate() {
+
+        byte[] key = MacProvider.generateKey().getEncoded()
+
+        String payload = "this is my test for a payload"
+
+        String compact = Jwts.builder().setPayload(payload).signWith(SignatureAlgorithm.HS256, key)
+                .compressWith(CompressionAlgorithm.DEFLATE).compact()
+
+        def jws = Jwts.parser().setSigningKey(key).parsePlaintextJws(compact)
+
+        String parsed = jws.body
+
+        assertEquals "DEF", jws.header.getCompressionAlgorithm()
+
+        assertEquals "this is my test for a payload", parsed
+    }
+
 
     @Test
     void testHS256() {
