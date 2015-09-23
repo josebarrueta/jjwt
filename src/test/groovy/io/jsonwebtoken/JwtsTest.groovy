@@ -16,7 +16,6 @@
 package io.jsonwebtoken
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.jsonwebtoken.impl.CompressionException
 import io.jsonwebtoken.impl.DefaultHeader
 import io.jsonwebtoken.impl.DefaultJwsHeader
 import io.jsonwebtoken.impl.TextCodec
@@ -184,16 +183,6 @@ class JwtsTest {
             fail()
         } catch (MalformedJwtException e) {
             assertEquals e.message, "JWT string 'foo..bar' is missing a body/payload."
-        }
-    }
-
-    @Test
-    void testWithInvalidCompressionAlgorithm() {
-        try {
-
-            Jwts.builder().setHeaderParam("cmpalg", "CUSTOM").setId("andId").compact()
-        } catch (CompressionException e) {
-            assertEquals "Unsupported compression algorithm 'CUSTOM'", e.getMessage()
         }
     }
 
